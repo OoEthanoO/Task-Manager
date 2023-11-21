@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 0.5
+ * Version Number: 0.5.1
  */
 
 // Credits: aquario
@@ -14,7 +14,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.5";
+string currentVersion = "0.5.1";
 const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription"};
 const int WIDTH = 70;
 
@@ -362,6 +362,12 @@ public:
         printBottomRow();
         int id = checkValidID(sid);
         string description = tasks[id - 1].description;
+        if (description.empty()) {
+            printf("No description found.");
+            printBottomRow();
+            showMenu();
+            return;
+        }
         printWindow(description);
         showMenu();
     }
