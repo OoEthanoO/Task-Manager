@@ -1,6 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
+ * Version Number: 0.3
  */
 
 #include <iostream>
@@ -9,10 +10,9 @@
 
 using namespace std;
 
-ifstream idStream;
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.3";
+string currentVersion = "0.3.1";
 vector<string> commands = {"showCommands", "version", "add", "exit", "clear", "display", "remove"};
 const int WIDTH = 60;
 
@@ -58,7 +58,7 @@ public:
     void showMenu() {
         cout << "Execute a command here (showCommands to show commands): ";
         string command;
-        cin >> command;
+        getline(cin, command);
         if (commands.end() != find(commands.begin(), commands.end(), command)) {
             if (command == "showCommands") {
                 showCommands();
@@ -108,7 +108,6 @@ public:
         Task task;
         cout << "Enter the name of the task: ";
         string name;
-        cin.ignore();
         getline(cin, name);
         task.name = name;
         tasks.push_back(task);
@@ -131,7 +130,8 @@ public:
         printTopRow();
         cout << "Are you sure you want to clear all tasks? (y/n): ";
         string answer;
-        cin >> answer;
+        cin.ignore();
+        getline(cin, answer);
         if (answer == "y") {
             outputSaveStream.close();
             inputReadStream.close();
@@ -153,9 +153,7 @@ public:
         string line;
         while (getline(inputReadStream, line)) {
             Task task;
-            string id = "";
             string name = "";
-            bool isId = true;
             for (char c : line) {
                 name += c;
             }
@@ -219,7 +217,6 @@ public:
 int main() {
     outputSaveStream.open("storage.csv", ios::app);
     inputReadStream.open("storage.csv");
-    idStream.open("id.txt");
     Program program;
     program.initialization();
     program.showMenu();
