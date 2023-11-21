@@ -27,7 +27,7 @@ vector<Task> tasks;
 
 class Program {
 private:
-    void printTopRow() {
+    static void printTopRow() {
         cout << "\n";
         for (int i = 0; i < WIDTH; i++) {
             cout << "-";
@@ -35,14 +35,14 @@ private:
         cout << "\n";
     }
 
-    void printBottomRow() {
+    static void printBottomRow() {
         for (int i = 0; i < WIDTH; i++) {
             cout << "-";
         }
         cout << "\n\n";
     }
 
-    void printf(string text) {
+    static void printf(const string &text) {
         int size = text.size();
         int width = WIDTH;
         width -= 3;
