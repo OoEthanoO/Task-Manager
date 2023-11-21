@@ -1,8 +1,10 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 0.3
+ * Version Number: 0.5
  */
+
+// Credits: aquario
 
 #include <iostream>
 #include <fstream>
@@ -12,14 +14,15 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.4";
-vector<string> commands = {"showCommands", "version", "add", "exit", "clear", "display", "remove"};
-const int WIDTH = 60;
+string currentVersion = "0.5";
+const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription"};
+const int WIDTH = 70;
 
 class Task {
 public:
     string name;
     string date;
+    string description;
 };
 
 vector<Task> tasks;
@@ -55,7 +58,6 @@ private:
         cout << "\n";
     }
 
-public:
     void checkDate(string date) {
         if (date.size() != 10) {
             cout << "Date must be in the format of YYYY-MM-DD.\n";
@@ -109,25 +111,83 @@ public:
         }
     }
 
+    int checkValidID(string sid) {
+        if (!all_of(sid.begin(), sid.end(), ::isdigit)) {
+            cout << "ID must be a number.\n";
+            printBottomRow();
+            showMenu();
+            return -1;
+        }
+        int id = stoi(sid);
+        if (id < 1) {
+            cout << "ID must be greater than or equal to 1.\n";
+            printBottomRow();
+            showMenu();
+            return -1;
+        }
+        if (tasks.size() < id) {
+            cout << "Task not found.\n";
+            printBottomRow();
+            showMenu();
+            return -1;
+        }
+
+        return id;
+    }
+
+    void printWindow(string text) {
+        printTopRow();
+        cout << "| ";
+        int chars = 2;
+        for (auto c : text) {
+            cout << c;
+            chars++;
+            if (chars == WIDTH - 2) {
+                cout << " |\n| ";
+                chars = 2;
+            }
+        }
+
+        while (chars < WIDTH - 1) {
+            cout << " ";
+            chars++;
+        }
+
+        cout << "|\n";
+        printBottomRow();
+    }
+public:
     void showMenu() {
         cout << "Execute a command here (showCommands to show commands): ";
         string command;
         getline(cin, command);
-        if (commands.end() != find(commands.begin(), commands.end(), command)) {
-            if (command == "showCommands") {
-                showCommands();
-            } else if (command == "version") {
-                version();
-            } else if (command == "add") {
-                add();
-            } else if (command == "exit") {
-                exitProgram();
-            } else if (command == "clear") {
-                clear();
-            } else if (command == "display") {
-                display();
-            } else if (command == "remove") {
-                remove();
+        int index = find(COMMANDS.begin(), COMMANDS.end(), command) - COMMANDS.begin();
+        if (index < COMMANDS.size()) {
+            switch (index) {
+                case 0:
+                    showCommands();
+                    break;
+                case 1:
+                    version();
+                    break;
+                case 2:
+                    add();
+                    break;
+                case 3:
+                    exitProgram();
+                    break;
+                case 4:
+                    clear();
+                    break;
+                case 5:
+                    display();
+                    break;
+                case 6:
+                    remove();
+                    break;
+                case 7:
+                    showDescription();
+                    break;
             }
         } else {
             cout << "Command not found.\n";
@@ -145,6 +205,7 @@ public:
         printf("clear -> clear all tasks (0.3)");
         printf("display -> display all tasks (0.3)");
         printf("remove -> remove a task (0.3)");
+        printf("showDescription -> display the description of a task (0.5)");
         printBottomRow();
         showMenu();
     }
@@ -160,19 +221,29 @@ public:
     void add() {
         printTopRow();
         Task task;
+
         cout << "Enter the name of the task: ";
         string name;
         getline(cin, name);
         task.name = name;
+
         cout << "Enter the date of the task (YYYY-MM-DD): ";
         string date;
         getline(cin, date);
         checkDate(date);
         task.date = date;
+
+        cout << "Give a short description of the task (Optional): ";
+        string description;
+        getline(cin, description);
+        task.description = description;
+
         tasks.push_back(task);
-        outputSaveStream << task.name << "\n";
+        outputSaveStream << task.name << "," << task.date << "," << task.description << "\n";
+        outputSaveStream.flush();
         cout << "Task added.\n";
         printBottomRow();
+        display();
         showMenu();
     }
 
@@ -180,7 +251,6 @@ public:
         printTopRow();
         printf("Exiting...");
         outputSaveStream.close();
-        inputReadStream.close();
         printBottomRow();
         exit(0);
     }
@@ -192,17 +262,17 @@ public:
         getline(cin, answer);
         if (answer == "y") {
             outputSaveStream.close();
-            inputReadStream.close();
             outputSaveStream.open("storage.csv", ios::trunc);
             outputSaveStream.close();
             outputSaveStream.open("storage.csv", ios::app);
-            inputReadStream.open("storage.csv");
+            outputSaveStream.flush();
             tasks.clear();
             cout << "Cleared.\n";
         } else {
             cout << "Cancelled\n";
         }
         printBottomRow();
+        display();
         showMenu();
     }
 
@@ -210,14 +280,30 @@ public:
         cout << "Initializing...\n";
         string line;
         while (getline(inputReadStream, line)) {
+            int state = 0;
             Task task;
-            string name = "";
+            string name;
+            string date;
+            string description;
             for (char c : line) {
-                name += c;
+                if (c == ',') {
+                    state++;
+                    continue;
+                }
+                if (state == 0) {
+                    name += c;
+                } else if (state == 1) {
+                    date += c;
+                } else if (state == 2) {
+                    description += c;
+                }
             }
             task.name = name;
+            task.date = date;
+            task.description = description;
             tasks.push_back(task);
         }
+        inputReadStream.close();
         cout << "Initialized.\n";
     }
 
@@ -245,29 +331,38 @@ public:
         string sid;
         cout << "Enter the ID of the task you want to remove: ";
         getline(cin, sid);
-        if (!all_of(sid.begin(), sid.end(), ::isdigit)) {
-            cout << "ID must be a number.\n";
-            printBottomRow();
-            showMenu();
-            return;
-        }
-        int id = stoi(sid);
-        if (tasks.size() < id) {
-            cout << "Task not found.\n";
-            printBottomRow();
-            showMenu();
-            return;
-        }
+        int id = checkValidID(sid);
         cout << "Are you sure you want to remove this task? (y/n): ";
         string answer;
         getline(cin, answer);
         if (answer == "y") {
             tasks.erase(tasks.begin() + id - 1);
+            outputSaveStream.close();
+            outputSaveStream.open("storage.csv", ios::trunc);
+            outputSaveStream.close();
+            outputSaveStream.open("storage.csv", ios::app);
+            for (Task task : tasks) {
+                outputSaveStream << task.name << "," << task.date << "," << task.description << "\n";
+            }
+            outputSaveStream.flush();
             cout << "Removed.\n";
         } else {
             cout << "Cancelled\n";
         }
         printBottomRow();
+        display();
+        showMenu();
+    }
+
+    void showDescription() {
+        printTopRow();
+        cout << "Enter the ID of the task that you want to view the description of: ";
+        string sid;
+        getline(cin, sid);
+        printBottomRow();
+        int id = checkValidID(sid);
+        string description = tasks[id - 1].description;
+        printWindow(description);
         showMenu();
     }
 };
@@ -277,5 +372,6 @@ int main() {
     inputReadStream.open("storage.csv");
     Program program;
     program.initialization();
+    program.display();
     program.showMenu();
 }
