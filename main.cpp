@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 0.5.1
+ * Version Number: 0.6
  */
 
 // Credits: aquario
@@ -14,7 +14,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.5.1";
+string currentVersion = "0.6";
 const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription"};
 const int WIDTH = 70;
 
@@ -23,6 +23,7 @@ public:
     string name;
     string date;
     string description;
+    string priority;
 };
 
 vector<Task> tasks;
@@ -238,8 +239,17 @@ public:
         getline(cin, description);
         task.description = description;
 
+        cout << "Enter the priority of the task (low, medium (default), high): ";
+        string priority;
+        getline(cin, priority);
+        if (priority == "low" || priority == "medium" || priority == "high") {
+            task.priority = priority;
+        } else {
+            task.priority = "medium";
+        }
+
         tasks.push_back(task);
-        outputSaveStream << task.name << "," << task.date << "," << task.description << "\n";
+        outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
         outputSaveStream.flush();
         cout << "Task added.\n";
         printBottomRow();
@@ -316,10 +326,10 @@ public:
             return;
         }
         printf("Here are the list of tasks:");
-        printf("ID | Task Name | Due Date");
+        printf("ID | Task Name | Due Date | Priority");
         int id = 1;
         for (Task task : tasks) {
-            printf(to_string(id) + " | " + task.name + " | " + task.date);
+            printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority);
             id++;
         }
         printBottomRow();
@@ -342,7 +352,7 @@ public:
             outputSaveStream.close();
             outputSaveStream.open("storage.csv", ios::app);
             for (Task task : tasks) {
-                outputSaveStream << task.name << "," << task.date << "," << task.description << "\n";
+                outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
             }
             outputSaveStream.flush();
             cout << "Removed.\n";
