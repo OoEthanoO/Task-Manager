@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.0
+ * Version Number: 1.0.1
  */
 
 // Credits: aquario
@@ -14,7 +14,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.0";
+string currentVersion = "1.0.1";
 const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit"};
 const int WIDTH = 70;
 
@@ -285,6 +285,7 @@ public:
         }
 
         tasks.push_back(task);
+        sort(tasks.begin(), tasks.end(), sortByPriority);
         outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
         outputSaveStream.flush();
         cout << "Task added.\n";
