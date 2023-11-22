@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 0.7
+ * Version Number: 0.7.1
  */
 
 // Credits: aquario
@@ -14,7 +14,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.7";
+string currentVersion = "0.7.1";
 const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit"};
 const int WIDTH = 70;
 
@@ -119,6 +119,14 @@ private:
             showMenu();
             return -1;
         }
+
+        if (sid.empty()) {
+            cout << "ID must not be empty.\n";
+            printBottomRow();
+            showMenu();
+            return -1;
+        }
+
         int id = stoi(sid);
         if (id < 1) {
             cout << "ID must be greater than or equal to 1.\n";
