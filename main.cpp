@@ -119,14 +119,6 @@ private:
             showMenu();
             return -1;
         }
-
-        if (sid.empty()) {
-            cout << "ID must not be empty.\n";
-            printBottomRow();
-            showMenu();
-            return -1;
-        }
-
         int id = stoi(sid);
         if (id < 1) {
             cout << "ID must be greater than or equal to 1.\n";
