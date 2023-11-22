@@ -24,17 +24,17 @@ This Task Manager Console Application is a simple tool for managing tasks, allow
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/task-manager-cpp.git
-   cd task-manager-cpp
+   git clone https://github.com/your-username/Task-Manager
+   cd Task-Manager
    
 2. Compile the program:
 
     ```bash
-    g++ -o task_manager main.cpp
+    g++ -o Task-Manager main.cpp
    
 3. Run the program:
     ```bash
-    ./task_manager
+    ./Task-Manager
 
 ## Usage
 Upon running the program, you'll be presented with a command-line interface. Follow the prompts to execute commands. Common commands include:
