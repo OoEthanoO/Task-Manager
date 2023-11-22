@@ -15,8 +15,7 @@ using namespace std;
 ofstream outputSaveStream;
 ifstream inputReadStream;
 string currentVersion = "1.0.1";
-string sortBy = "priority";
-const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit", "toggleSortBy"};
+const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit"};
 const int WIDTH = 70;
 
 class Task {
@@ -178,14 +177,6 @@ private:
         outputSaveStream.flush();
     }
 
-    void sort() {
-        if (sortBy == "priority") {
-            std::sort(tasks.begin(), tasks.end(), sortByPriority);
-        } else {
-            std::sort(tasks.begin(), tasks.end(), sortByDate);
-        }
-    }
-
     static bool sortByPriority(Task t1, Task t2) {
         if (t1.priority == "high" && t2.priority == "medium") {
             return true;
@@ -197,34 +188,6 @@ private:
             return true;
         }
         return false;
-    }
-
-    static bool sortByDate(Task t1, Task t2) {
-        int year1 = stoi(t1.date.substr(0, 4));
-        int year2 = stoi(t2.date.substr(0, 4));
-        if (year1 < year2) {
-            return true;
-        }
-        if (year1 > year2) {
-            return false;
-        }
-        int month1 = stoi(t1.date.substr(5, 2));
-        int month2 = stoi(t2.date.substr(5, 2));
-        if (month1 < month2) {
-            return true;
-        }
-        if (month1 > month2) {
-            return false;
-        }
-        int day1 = stoi(t1.date.substr(8, 2));
-        int day2 = stoi(t2.date.substr(8, 2));
-        if (day1 < day2) {
-            return true;
-        }
-        if (day1 > day2) {
-            return false;
-        }
-        return true;
     }
 public:
     void showMenu() {
@@ -261,9 +224,6 @@ public:
                 case 8:
                     edit();
                     break;
-                case 9:
-                    toggleSortBy();
-                    break;
             }
         } else {
             cout << "Command not found.\n";
@@ -283,7 +243,6 @@ public:
         printf("remove -> remove a task (0.3)");
         printf("showDescription -> display the description of a task (0.5)");
         printf("edit -> edit a task (0.7)");
-        printf("toggleSortBy -> toggle sort mode between priority and date (1.1)");
         printBottomRow();
         showMenu();
     }
@@ -326,7 +285,7 @@ public:
         }
 
         tasks.push_back(task);
-        sort();
+        sort(tasks.begin(), tasks.end(), sortByPriority);
         outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
         outputSaveStream.flush();
         cout << "Task added.\n";
@@ -387,8 +346,7 @@ public:
             }
             tasks.push_back(task);
         }
-        sort();
-
+        sort(tasks.begin(), tasks.end(), sortByPriority);
         inputReadStream.close();
         cout << "Initialized.\n";
     }
@@ -402,7 +360,6 @@ public:
             return;
         }
         printf("Here are the list of tasks:");
-        printf("Sort by: " + sortBy);
         printf("ID | Task Name | Due Date | Priority");
         int id = 1;
         for (Task task : tasks) {
@@ -494,22 +451,13 @@ public:
         }
 
         tasks[id - 1] = task;
-        sort();
         refreshStorage();
         cout << "Edited.\n";
         printBottomRow();
         display();
         showMenu();
     }
-
-    void toggleSortBy() {
-        sortBy = sortBy == "priority" ? "date" : "priority";
-        sort();
-        display();
-        showMenu();
-    }
 };
-
 
 int main() {
     outputSaveStream.open("storage.csv", ios::app);
