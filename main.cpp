@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 0.7.1
+ * Version Number: 1.0
  */
 
 // Credits: aquario
@@ -14,7 +14,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.7.1";
+string currentVersion = "1.0";
 const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit"};
 const int WIDTH = 70;
 
@@ -176,6 +176,19 @@ private:
         }
         outputSaveStream.flush();
     }
+
+    static bool sortByPriority(Task t1, Task t2) {
+        if (t1.priority == "high" && t2.priority == "medium") {
+            return true;
+        }
+        if (t1.priority == "high" && t2.priority == "low") {
+            return true;
+        }
+        if (t1.priority == "medium" && t2.priority == "low") {
+            return true;
+        }
+        return false;
+    }
 public:
     void showMenu() {
         cout << "Execute a command here (showCommands to show commands): ";
@@ -332,6 +345,7 @@ public:
             }
             tasks.push_back(task);
         }
+        sort(tasks.begin(), tasks.end(), sortByPriority);
         inputReadStream.close();
         cout << "Initialized.\n";
     }
