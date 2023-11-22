@@ -1,10 +1,10 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.2
+ * Version Number: 1.3
  */
 
-// Credits: aqariio
+// Contribution: aqariio
 
 #include <iostream>
 #include <fstream>
@@ -15,7 +15,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.2";
+string currentVersion = "1.3";
 string sortBy = "priority";
 const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit", "toggleSortBy", "search"};
 const int WIDTH = 70;
@@ -34,16 +34,20 @@ class Program {
 private:
     static void printTopRow() {
         cout << "\n";
+        cout << "\033[34m";
         for (int i = 0; i < WIDTH; i++) {
             cout << "-";
         }
+        cout << "\033[0m";
         cout << "\n";
     }
 
     static void printBottomRow() {
+        cout << "\033[34m";
         for (int i = 0; i < WIDTH; i++) {
             cout << "-";
         }
+        cout << "\033[0m";
         cout << "\n\n";
     }
 
@@ -51,43 +55,56 @@ private:
         int size = text.size();
         int width = WIDTH;
         width -= 3;
-        cout << "| ";
+        cout << "\033[34m| \033[0m";
         cout << text;
         for (int i = 0; i < (int) width - size; i++) {
             cout << " ";
         }
 
-        cout << "|";
+        cout << "\033[34m|\033[0m";
+        cout << "\n";
+    }
+
+    static void printf(string text, int size) {
+        int width = WIDTH;
+        width -= 3;
+        cout << "\033[34m| \033[0m";
+        cout << text;
+        for (int i = 0; i < (int) width - size; i++) {
+            cout << " ";
+        }
+
+        cout << "\033[34m|\033[0m";
         cout << "\n";
     }
 
     void checkDate(string date) {
         if (date.size() != 10) {
-            cout << "Date must be in the format of YYYY-MM-DD.\n";
+            cout << "\033[31mDate must be in the format of YYYY-MM-DD.\n\033[0m";
             showMenu();
             return;
         }
         if (date[4] != '-' || date[7] != '-') {
-            cout << "Date must be in the format of YYYY-MM-DD.\n";
+            cout << "\033[31mDate must be in the format of YYYY-MM-DD.\n\033[0m";
             showMenu();
             return;
         }
 
         string sYear = date.substr(0, 4);
         if (!all_of(sYear.begin(), sYear.end(), ::isdigit)) {
-            cout << "Year must be a number.\n";
+            cout << "\033[31mYear must be a number.\n\033[0m";
             showMenu();
             return;
         }
         string sMonth = date.substr(5, 2);
         if (!all_of(sMonth.begin(), sMonth.end(), ::isdigit)) {
-            cout << "Month must be a number.\n";
+            cout << "\033[31mMonth must be a number.\n\033[0m";
             showMenu();
             return;
         }
         string sDay = date.substr(8, 2);
         if (!all_of(sDay.begin(), sDay.end(), ::isdigit)) {
-            cout << "Day must be a number.\n";
+            cout << "\033[31mDay must be a number.\n\033[0m";
             showMenu();
             return;
         }
@@ -96,30 +113,30 @@ private:
         int month = stoi(sMonth);
         int day = stoi(sDay);
         if (year < 2023) {
-            cout << "Year must be greater than or equal to 2023.\n";
+            cout << "\033[31mYear must be greater than or equal to 2023.\n\033[0m";
             showMenu();
             return;
         }
         if (month < 1 || month > 12) {
-            cout << "Month must be between 1 and 12.\n";
+            cout << "\033[31mMonth must be between 1 and 12.\n\033[0m";
             showMenu();
             return;
         }
         if (day < 1 || day > 31) {
-            cout << "Day must be between 1 and 31.\n";
+            cout << "\033[31mDay must be between 1 and 31.\n\033[0m";
             showMenu();
             return;
         }
         if (month == 2) {
             if (year % 4 == 0) {
                 if (day > 29) {
-                    cout << "Day must be between 1 and 29.\n";
+                    cout << "\033[31mDay must be between 1 and 29.\n\033[0m";
                     showMenu();
                     return;
                 }
             } else {
                 if (day > 28) {
-                    cout << "Day must be between 1 and 28.\n";
+                    cout << "\033[31mDay must be between 1 and 28.\n\033[0m";
                     showMenu();
                     return;
                 }
@@ -127,7 +144,7 @@ private:
         }
         if (month == 4 || month == 6 || month == 9 || month == 11) {
             if (day > 30) {
-                cout << "Day must be between 1 and 30.\n";
+                cout << "\033[31mDay must be between 1 and 30.\n\033[0m";
                 showMenu();
                 return;
             }
@@ -136,14 +153,14 @@ private:
 
     int checkValidID(string sid) {
         if (!all_of(sid.begin(), sid.end(), ::isdigit)) {
-            cout << "ID must be a number.\n";
+            cout << "\033[31mID must be a number.\n\033[0m";
             printBottomRow();
             showMenu();
             return -1;
         }
 
         if (sid.empty()) {
-            cout << "ID must not be empty.\n";
+            cout << "\033[31mID must not be empty.\n\033[0m";
             printBottomRow();
             showMenu();
             return -1;
@@ -151,13 +168,13 @@ private:
 
         int id = stoi(sid);
         if (id < 1) {
-            cout << "ID must be greater than or equal to 1.\n";
+            cout << "\033[31mID must be greater than or equal to 1.\n\033[0m";
             printBottomRow();
             showMenu();
             return -1;
         }
         if (tasks.size() < id) {
-            cout << "Task not found.\n";
+            cout << "\033[31mTask not found.\n\033[0m";
             printBottomRow();
             showMenu();
             return -1;
@@ -290,7 +307,7 @@ public:
                     break;
             }
         } else {
-            cout << "Command not found.\n";
+            cout << "\033[31mCommand not found.\n\033[0m";
             showMenu();
         }
     }
@@ -315,7 +332,7 @@ public:
 
     void version() {
         printTopRow();
-        printf("Task Manager");
+        printf("\033[31mT\033[32ma\033[33ms\033[34mk \033[31mM\033[32ma\033[33mn\033[34ma\033[35mg\033[36me\033[37mr\033[0m", 12);
         printf("Version: " + currentVersion);
         printBottomRow();
         showMenu();
@@ -354,7 +371,7 @@ public:
         sort();
         outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
         outputSaveStream.flush();
-        cout << "Task added.\n";
+        cout << "\033[32mTask added.\n\033[0m";
         printBottomRow();
         display();
         showMenu();
@@ -380,9 +397,9 @@ public:
             outputSaveStream.open("storage.csv", ios::app);
             outputSaveStream.flush();
             tasks.clear();
-            cout << "Cleared.\n";
+            cout << "\033[32mCleared.\n\033[0m";
         } else {
-            cout << "Cancelled\n";
+            cout << "\033[31mCancelled\n\033[0m";
         }
         printBottomRow();
         display();
@@ -415,13 +432,13 @@ public:
         sort();
 
         inputReadStream.close();
-        cout << "Initialized.\n";
+        cout << "\033[32mInitialized.\n\033[0m";
     }
 
     void display() {
         printTopRow();
         if (tasks.empty()) {
-            printf("No tasks found.");
+            printf("\033[31mNo tasks found.\033[0m");
             printBottomRow();
             showMenu();
             return;
@@ -450,9 +467,9 @@ public:
         if (answer == "y") {
             tasks.erase(tasks.begin() + id - 1);
             refreshStorage();
-            cout << "Removed.\n";
+            cout << "\033[32mRemoved.\n\033[0m";
         } else {
-            cout << "Cancelled\n";
+            cout << "\033[31mCancelled\n\033[0m";
         }
         printBottomRow();
         display();
@@ -468,7 +485,7 @@ public:
         int id = checkValidID(sid);
         string description = tasks[id - 1].description;
         if (description.empty()) {
-            printf("No description found.");
+            printf("\033[31mNo description found.\033[0m");
             printBottomRow();
             showMenu();
             return;
@@ -521,7 +538,7 @@ public:
         tasks[id - 1] = task;
         sort();
         refreshStorage();
-        cout << "Edited.\n";
+        cout << "\033[32mEdited.\n\033[0m";
         printBottomRow();
         display();
         showMenu();
@@ -551,7 +568,7 @@ public:
         }
 
         if (!found) {
-            printf("No tasks found.");
+            printf("\033[31mNo tasks found.\033[0m");
         }
         printBottomRow();
         showMenu();
