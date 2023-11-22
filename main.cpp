@@ -1,22 +1,23 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.1
+ * Version Number: 1.2
  */
 
-// Credits: aquario
+// Credits: aqariio
 
 #include <iostream>
 #include <fstream>
-#include <unordered_set>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.1";
+string currentVersion = "1.2";
 string sortBy = "priority";
-const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit", "toggleSortBy"};
+const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit", "toggleSortBy", "search"};
 const int WIDTH = 70;
 
 class Task {
@@ -31,7 +32,7 @@ vector<Task> tasks;
 
 class Program {
 private:
-    void printTopRow() {
+    static void printTopRow() {
         cout << "\n";
         for (int i = 0; i < WIDTH; i++) {
             cout << "-";
@@ -39,14 +40,14 @@ private:
         cout << "\n";
     }
 
-    void printBottomRow() {
+    static void printBottomRow() {
         for (int i = 0; i < WIDTH; i++) {
             cout << "-";
         }
         cout << "\n\n";
     }
 
-    void printf(string text) {
+    static void printf(string text) {
         int size = text.size();
         int width = WIDTH;
         width -= 3;
@@ -71,9 +72,29 @@ private:
             showMenu();
             return;
         }
-        int year = stoi(date.substr(0, 4));
-        int month = stoi(date.substr(5, 2));
-        int day = stoi(date.substr(8, 2));
+
+        string sYear = date.substr(0, 4);
+        if (!all_of(sYear.begin(), sYear.end(), ::isdigit)) {
+            cout << "Year must be a number.\n";
+            showMenu();
+            return;
+        }
+        string sMonth = date.substr(5, 2);
+        if (!all_of(sMonth.begin(), sMonth.end(), ::isdigit)) {
+            cout << "Month must be a number.\n";
+            showMenu();
+            return;
+        }
+        string sDay = date.substr(8, 2);
+        if (!all_of(sDay.begin(), sDay.end(), ::isdigit)) {
+            cout << "Day must be a number.\n";
+            showMenu();
+            return;
+        }
+
+        int year = stoi(sYear);
+        int month = stoi(sMonth);
+        int day = stoi(sDay);
         if (year < 2023) {
             cout << "Year must be greater than or equal to 2023.\n";
             showMenu();
@@ -264,6 +285,9 @@ public:
                 case 9:
                     toggleSortBy();
                     break;
+                case 10:
+                    search();
+                    break;
             }
         } else {
             cout << "Command not found.\n";
@@ -284,6 +308,7 @@ public:
         printf("showDescription -> display the description of a task (0.5)");
         printf("edit -> edit a task (0.7)");
         printf("toggleSortBy -> toggle sort mode between priority and date (1.1)");
+        printf("search -> search for a task (1.2)");
         printBottomRow();
         showMenu();
     }
@@ -506,6 +531,29 @@ public:
         sortBy = sortBy == "priority" ? "date" : "priority";
         sort();
         display();
+        showMenu();
+    }
+
+    void search() {
+        printTopRow();
+        cout << "Enter the keyword you want to search for: ";
+        string keyword;
+        getline(cin, keyword);
+        printf("ID | Task Name | Due Date | Priority");
+        int id = 1;
+        bool found = false;
+        for (Task task : tasks) {
+            if (task.name.find(keyword) != string::npos) {
+                printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority);
+                found = true;
+            }
+            id++;
+        }
+
+        if (!found) {
+            printf("No tasks found.");
+        }
+        printBottomRow();
         showMenu();
     }
 };
