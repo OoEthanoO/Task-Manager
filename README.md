@@ -50,8 +50,8 @@ Upon running the program, you'll be presented with a command-line interface. Fol
 ## Contributing
 Contributions are welcome! Please follow these guidelines:
 
-Fork the repository.
-Create a new branch for your feature or bug fix.
-Commit your changes with descriptive messages.
-Push your branch to your fork.
-Create a pull request.
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Commit your changes with descriptive messages.
+4. Push your branch to your fork.
+5. Create a pull request.
