@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 0.6
+ * Version Number: 0.7
  */
 
 // Credits: aquario
@@ -14,8 +14,8 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "0.6";
-const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription"};
+string currentVersion = "0.7";
+const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit"};
 const int WIDTH = 70;
 
 class Task {
@@ -157,6 +157,17 @@ private:
         cout << "|\n";
         printBottomRow();
     }
+
+    void refreshStorage() {
+        outputSaveStream.close();
+        outputSaveStream.open("storage.csv", ios::trunc);
+        outputSaveStream.close();
+        outputSaveStream.open("storage.csv", ios::app);
+        for (Task task : tasks) {
+            outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
+        }
+        outputSaveStream.flush();
+    }
 public:
     void showMenu() {
         cout << "Execute a command here (showCommands to show commands): ";
@@ -189,6 +200,9 @@ public:
                 case 7:
                     showDescription();
                     break;
+                case 8:
+                    edit();
+                    break;
             }
         } else {
             cout << "Command not found.\n";
@@ -207,6 +221,7 @@ public:
         printf("display -> display all tasks (0.3)");
         printf("remove -> remove a task (0.3)");
         printf("showDescription -> display the description of a task (0.5)");
+        printf("edit -> edit a task (0.7)");
         printBottomRow();
         showMenu();
     }
@@ -292,25 +307,21 @@ public:
         while (getline(inputReadStream, line)) {
             int state = 0;
             Task task;
-            string name;
-            string date;
-            string description;
             for (char c : line) {
                 if (c == ',') {
                     state++;
                     continue;
                 }
                 if (state == 0) {
-                    name += c;
+                    task.name += c;
                 } else if (state == 1) {
-                    date += c;
+                    task.date += c;
                 } else if (state == 2) {
-                    description += c;
+                    task.description += c;
+                } else if (state == 3) {
+                    task.priority += c;
                 }
             }
-            task.name = name;
-            task.date = date;
-            task.description = description;
             tasks.push_back(task);
         }
         inputReadStream.close();
@@ -347,14 +358,7 @@ public:
         getline(cin, answer);
         if (answer == "y") {
             tasks.erase(tasks.begin() + id - 1);
-            outputSaveStream.close();
-            outputSaveStream.open("storage.csv", ios::trunc);
-            outputSaveStream.close();
-            outputSaveStream.open("storage.csv", ios::app);
-            for (Task task : tasks) {
-                outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
-            }
-            outputSaveStream.flush();
+            refreshStorage();
             cout << "Removed.\n";
         } else {
             cout << "Cancelled\n";
@@ -379,6 +383,55 @@ public:
             return;
         }
         printWindow(description);
+        showMenu();
+    }
+
+    void edit() {
+        printTopRow();
+        cout << "Enter the ID of the task that you want to edit: ";
+        string sid;
+        getline(cin, sid);
+        int id = checkValidID(sid);
+        Task task = tasks[id - 1];
+
+        cout << "Enter the new name of the task (Optional): ";
+        string name;
+        getline(cin, name);
+        if (!name.empty()) {
+            task.name = name;
+        }
+
+        cout << "Enter the new date of the task (Optional): ";
+        string date;
+        getline(cin, date);
+        if (!date.empty()) {
+            checkDate(date);
+            task.date = date;
+        }
+
+        cout << "Enter the new description of the task (Optional): ";
+        string description;
+        getline(cin, description);
+        if (!description.empty()) {
+            task.description = description;
+        }
+
+        cout << "Enter the new priority of the task (Optional): ";
+        string priority;
+        getline(cin, priority);
+        if (!priority.empty()) {
+            if (priority == "low" || priority == "medium" || priority == "high") {
+                task.priority = priority;
+            } else {
+                task.priority = "medium";
+            }
+        }
+
+        tasks[id - 1] = task;
+        refreshStorage();
+        cout << "Edited.\n";
+        printBottomRow();
+        display();
         showMenu();
     }
 };
