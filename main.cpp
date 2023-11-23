@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.3
+ * Version Number: 1.4
  */
 
 // Contribution: aqariio
@@ -10,14 +10,16 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <cstdio>
 
 using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.3";
+string currentVersion = "1.4";
 string sortBy = "priority";
-const vector<string> COMMANDS = {"showCommands", "version", "add", "exit", "clear", "display", "remove", "showDescription", "edit", "toggleSortBy", "search"};
+string filename;
+const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove", "showdescription", "edit", "togglesortby", "search", "erase", "logout"};
 const int WIDTH = 70;
 
 class Task {
@@ -81,11 +83,13 @@ private:
     void checkDate(string date) {
         if (date.size() != 10) {
             cout << "\033[31mDate must be in the format of YYYY-MM-DD.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
         if (date[4] != '-' || date[7] != '-') {
             cout << "\033[31mDate must be in the format of YYYY-MM-DD.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
@@ -93,18 +97,21 @@ private:
         string sYear = date.substr(0, 4);
         if (!all_of(sYear.begin(), sYear.end(), ::isdigit)) {
             cout << "\033[31mYear must be a number.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
         string sMonth = date.substr(5, 2);
         if (!all_of(sMonth.begin(), sMonth.end(), ::isdigit)) {
             cout << "\033[31mMonth must be a number.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
         string sDay = date.substr(8, 2);
         if (!all_of(sDay.begin(), sDay.end(), ::isdigit)) {
             cout << "\033[31mDay must be a number.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
@@ -114,16 +121,19 @@ private:
         int day = stoi(sDay);
         if (year < 2023) {
             cout << "\033[31mYear must be greater than or equal to 2023.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
         if (month < 1 || month > 12) {
             cout << "\033[31mMonth must be between 1 and 12.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
         if (day < 1 || day > 31) {
             cout << "\033[31mDay must be between 1 and 31.\n\033[0m";
+            printBottomRow();
             showMenu();
             return;
         }
@@ -131,12 +141,14 @@ private:
             if (year % 4 == 0) {
                 if (day > 29) {
                     cout << "\033[31mDay must be between 1 and 29.\n\033[0m";
+                    printBottomRow();
                     showMenu();
                     return;
                 }
             } else {
                 if (day > 28) {
                     cout << "\033[31mDay must be between 1 and 28.\n\033[0m";
+                    printBottomRow();
                     showMenu();
                     return;
                 }
@@ -145,6 +157,7 @@ private:
         if (month == 4 || month == 6 || month == 9 || month == 11) {
             if (day > 30) {
                 cout << "\033[31mDay must be between 1 and 30.\n\033[0m";
+                printBottomRow();
                 showMenu();
                 return;
             }
@@ -207,9 +220,9 @@ private:
 
     void refreshStorage() {
         outputSaveStream.close();
-        outputSaveStream.open("storage.csv", ios::trunc);
+        outputSaveStream.open(filename, ios::trunc);
         outputSaveStream.close();
-        outputSaveStream.open("storage.csv", ios::app);
+        outputSaveStream.open(filename, ios::app);
         for (Task task : tasks) {
             outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
         }
@@ -221,6 +234,12 @@ private:
             std::sort(tasks.begin(), tasks.end(), sortByPriority);
         } else {
             std::sort(tasks.begin(), tasks.end(), sortByDate);
+        }
+    }
+
+    void toLowerCase(string &s) {
+        for (char &c : s) {
+            c = tolower(c);
         }
     }
 
@@ -269,6 +288,7 @@ public:
         cout << "Execute a command here (showCommands to show commands): ";
         string command;
         getline(cin, command);
+        toLowerCase(command);
         int index = find(COMMANDS.begin(), COMMANDS.end(), command) - COMMANDS.begin();
         if (index < COMMANDS.size()) {
             switch (index) {
@@ -305,6 +325,15 @@ public:
                 case 10:
                     search();
                     break;
+                case 11:
+                    erase();
+                    break;
+                case 12:
+                    tasks.clear();
+                    cout << "\033[32mLogged out.\n\033[0m";
+                    askForLogin();
+                    initialization();
+                    break;
             }
         } else {
             cout << "\033[31mCommand not found.\n\033[0m";
@@ -315,17 +344,18 @@ public:
     void showCommands() {
         printTopRow();
         printf("Here are the list of commands:");
-        printf("showCommands -> show all commands available (0.1)");
+        printf("showcommands -> show all commands available (0.1)");
         printf("version -> show version of program (0.1)");
         printf("add -> add a task (0.2)");
         printf("exit -> exit program (0.2)");
         printf("clear -> clear all tasks (0.3)");
         printf("display -> display all tasks (0.3)");
         printf("remove -> remove a task (0.3)");
-        printf("showDescription -> display the description of a task (0.5)");
+        printf("showdescription -> display the description of a task (0.5)");
         printf("edit -> edit a task (0.7)");
-        printf("toggleSortBy -> toggle sort mode between priority and date (1.1)");
+        printf("togglesortby -> toggle sort mode between priority and date (1.1)");
         printf("search -> search for a task (1.2)");
+        printf("erase -> erase account (1.4)");
         printBottomRow();
         showMenu();
     }
@@ -369,7 +399,7 @@ public:
 
         tasks.push_back(task);
         sort();
-        outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
+        outputSaveStream << "\"" << task.name << "\"" << "," << "\"" << task.date << "\"" << "," << "\"" << task.description << "\"" << "," << "\"" << task.priority << "\"" << "\n";
         outputSaveStream.flush();
         cout << "\033[32mTask added.\n\033[0m";
         printBottomRow();
@@ -392,9 +422,9 @@ public:
         getline(cin, answer);
         if (answer == "y") {
             outputSaveStream.close();
-            outputSaveStream.open("storage.csv", ios::trunc);
+            outputSaveStream.open(filename, ios::trunc);
             outputSaveStream.close();
-            outputSaveStream.open("storage.csv", ios::app);
+            outputSaveStream.open(filename, ios::app);
             outputSaveStream.flush();
             tasks.clear();
             cout << "\033[32mCleared.\n\033[0m";
@@ -408,6 +438,8 @@ public:
 
     void initialization() {
         cout << "Initializing...\n";
+        inputReadStream.open(filename);
+        outputSaveStream.open(filename, ios::app);
         string line;
         while (getline(inputReadStream, line)) {
             int state = 0;
@@ -427,18 +459,28 @@ public:
                     task.priority += c;
                 }
             }
+            task.name.erase(0, 1);
+            task.name.erase(task.name.size() - 1);
+            task.date.erase(0, 1);
+            task.date.erase(task.date.size() - 1);
+            task.description.erase(0, 1);
+            task.description.erase(task.description.size() - 1);
+            task.priority.erase(0, 1);
+            task.priority.erase(task.priority.size() - 1);
             tasks.push_back(task);
         }
         sort();
 
         inputReadStream.close();
         cout << "\033[32mInitialized.\n\033[0m";
+        display();
+        showMenu();
     }
 
     void display() {
         printTopRow();
         if (tasks.empty()) {
-            printf("\033[31mNo tasks found.\033[0m");
+            printf("\033[31mNo tasks found.\033[0m", 15);
             printBottomRow();
             showMenu();
             return;
@@ -568,19 +610,124 @@ public:
         }
 
         if (!found) {
-            printf("\033[31mNo tasks found.\033[0m");
+            printf("\033[31mNo tasks found.\033[0m", 15);
         }
         printBottomRow();
         showMenu();
+    }
+
+    void askForLogin() {
+        printTopRow();
+        cout << "Enter your username (enter to create new account): ";
+        string username;
+        getline(cin, username);
+        if (username.empty()) {
+            cout << "Enter your new username: ";
+            getline(cin, username);
+            cout << "Enter your new password: ";
+            string password;
+            getline(cin, password);
+            ofstream outputUsernameStream;
+            outputUsernameStream.open("username.csv", ios::app);
+            outputUsernameStream << username << "," << password << "\n";
+            outputUsernameStream.flush();
+            outputUsernameStream.close();
+            cout << "\033[32mAccount created.\n\033[0m";
+            printBottomRow();
+            askForLogin();
+            return;
+        }
+        ifstream inputUsernameStream;
+        inputUsernameStream.open("username.csv");
+        string line;
+        while (getline(inputUsernameStream, line)) {
+            if (line.find(username) != string::npos) {
+                line.erase(0, username.size() + 1);
+                cout << "Enter your password: ";
+                string password;
+                getline(cin, password);
+                if (line.find(password) != string::npos) {
+                    cout << "\033[32mLogin successful.\n\033[0m";
+                    filename = username + ".csv";
+                    inputUsernameStream.close();
+                    printBottomRow();
+                    return;
+                } else {
+                    cout << "\033[31mIncorrect password.\n\033[0m";
+                    printBottomRow();
+                    askForLogin();
+                    return;
+                }
+            }
+        }
+        cout << "\033[31mUsername not found.\n\033[0m";
+        askForLogin();
+    }
+
+    void erase() {
+        printTopRow();
+        cout << "Are you sure you want to permanently erase this account? (y/n): ";
+        string answer;
+        getline(cin, answer);
+        if (answer == "y") {
+            cout << "Enter your username: ";
+            string username;
+            getline(cin, username);
+            cout << "Enter your password: ";
+            string password;
+            getline(cin, password);
+            ifstream inputUsernameStream;
+            inputUsernameStream.open("username.csv");
+            string line;
+            while (getline(inputUsernameStream, line)) {
+                if (line.find(username) != string::npos) {
+                    line.erase(0, username.size() + 1);
+                    if (line.find(password) != string::npos) {
+                        char charfile[username.size() + 4];
+                        strcpy(charfile, username.c_str());
+                        strcat(charfile, ".csv");
+                        std::remove(charfile);
+                        ifstream inputUsernameStream2;
+                        inputUsernameStream2.open("username.csv");
+                        string line2;
+                        ofstream outputUsernameStream;
+                        outputUsernameStream.open("username2.csv", ios::app);
+                        while (getline(inputUsernameStream2, line2)) {
+                            if (line2.find(username) == string::npos) {
+                                outputUsernameStream << line2 << "\n";
+                            }
+                        }
+                        outputUsernameStream.flush();
+                        outputUsernameStream.close();
+                        inputUsernameStream2.close();
+                        std::remove("username.csv");
+                        std::rename("username2.csv", "username.csv");
+                        cout << "\033[32mAccount erased.\n\033[0m";
+                        printBottomRow();
+                        exitProgram();
+                        return;
+                    } else {
+                        cout << "\033[31mIncorrect password.\n\033[0m";
+                        printBottomRow();
+                        erase();
+                        return;
+                    }
+                }
+            }
+            cout << "\033[31mUsername not found.\n\033[0m";
+            printBottomRow();
+            erase();
+        } else {
+            cout << "\033[31mCancelled\n\033[0m";
+            printBottomRow();
+            showMenu();
+        }
     }
 };
 
 
 int main() {
-    outputSaveStream.open("storage.csv", ios::app);
-    inputReadStream.open("storage.csv");
     Program program;
+    program.askForLogin();
     program.initialization();
-    program.display();
-    program.showMenu();
 }
