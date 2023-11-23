@@ -15,7 +15,6 @@
 
 using namespace std;
 
-
 class Util {
 public:
     static string sortBy;
@@ -35,6 +34,8 @@ public:
     static void printWindow(const string &text);
 
     static void refreshStorage();
+
+    static void toLowerCase(string &s);
 
     static void sort();
 

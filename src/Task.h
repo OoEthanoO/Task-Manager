@@ -15,6 +15,7 @@ public:
     string date;
     string description;
     string priority;
+    string tag;
 };
 
 

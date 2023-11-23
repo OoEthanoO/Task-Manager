@@ -69,11 +69,13 @@ void Util::printf(const string &text, int size) {
 void Util::checkDate(string date) {
     if (date.size() != 10) {
         cout << "\033[31mDate must be in the format of YYYY-MM-DD.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
     if (date[4] != '-' || date[7] != '-') {
         cout << "\033[31mDate must be in the format of YYYY-MM-DD.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
@@ -81,18 +83,21 @@ void Util::checkDate(string date) {
     string sYear = date.substr(0, 4);
     if (!all_of(sYear.begin(), sYear.end(), ::isdigit)) {
         cout << "\033[31mYear must be a number.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
     string sMonth = date.substr(5, 2);
     if (!all_of(sMonth.begin(), sMonth.end(), ::isdigit)) {
         cout << "\033[31mMonth must be a number.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
     string sDay = date.substr(8, 2);
     if (!all_of(sDay.begin(), sDay.end(), ::isdigit)) {
         cout << "\033[31mDay must be a number.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
@@ -102,16 +107,19 @@ void Util::checkDate(string date) {
     int day = stoi(sDay);
     if (year < 2023) {
         cout << "\033[31mYear must be greater than or equal to 2023.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
     if (month < 1 || month > 12) {
         cout << "\033[31mMonth must be between 1 and 12.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
     if (day < 1 || day > 31) {
         cout << "\033[31mDay must be between 1 and 31.\n\033[0m";
+        printBottomRow();
         program.showMenu();
         return;
     }
@@ -119,12 +127,14 @@ void Util::checkDate(string date) {
         if (year % 4 == 0) {
             if (day > 29) {
                 cout << "\033[31mDay must be between 1 and 29.\n\033[0m";
+                printBottomRow();
                 program.showMenu();
                 return;
             }
         } else {
             if (day > 28) {
                 cout << "\033[31mDay must be between 1 and 28.\n\033[0m";
+                printBottomRow();
                 program.showMenu();
                 return;
             }
@@ -133,6 +143,7 @@ void Util::checkDate(string date) {
     if (month == 4 || month == 6 || month == 9 || month == 11) {
         if (day > 30) {
             cout << "\033[31mDay must be between 1 and 30.\n\033[0m";
+            printBottomRow();
             program.showMenu();
             return;
         }
@@ -195,14 +206,23 @@ void Util::printWindow(const string &text) {
 
 void Util::refreshStorage() {
     program.outputSaveStream.close();
-    program.outputSaveStream.open("storage.csv", ios::trunc);
+    program.outputSaveStream.open(Program::filename, ios::trunc);
     program.outputSaveStream.close();
-    program.outputSaveStream.open("storage.csv", ios::app);
-    for (const Task& task : tasks) {
+    program.outputSaveStream.open(Program::filename, ios::app);
+    for (const Task &task: tasks) {
         program.outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority
-                         << "\n";
+                                 << "\n";
+        program.outputSaveStream << "\"" << task.name << "\"" << "," << "\"" << task.date << "\"" << "," << "\""
+                         << task.description << "\"" << "," << "\"" << task.priority << "\"" << "," << "\"" << task.tag
+                         << "\"" << "\n";
     }
     program.outputSaveStream.flush();
+}
+
+void Util::toLowerCase(string &s) {
+    for (char &c : s) {
+        c = tolower(c);
+    }
 }
 
 void Util::sort() {

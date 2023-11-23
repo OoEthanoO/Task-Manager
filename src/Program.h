@@ -24,6 +24,8 @@ public:
 
     vector<Task> tasks;
 
+    static string filename;
+
     void showMenu();
 
     void showCommands();
@@ -49,6 +51,12 @@ public:
     void search();
 
     void init();
+
+    void askForLogin();
+
+    void erase();
+
+    void filter();
 };
 
 
