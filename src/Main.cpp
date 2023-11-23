@@ -13,9 +13,6 @@ using namespace std;
 
 int main() {
     Program program = Program();
-    program.outputSaveStream.open("storage.csv", ios::app);
-    program.inputReadStream.open("storage.csv");
+    program.askForLogin();
     program.init();
-    program.display();
-    program.showMenu();
 }

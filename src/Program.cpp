@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.5
+ * Version Number: 1.5.1
  */
 
 // Contribution: aqariio
@@ -10,14 +10,15 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <unistd.h>
 #include "Program.h"
 #include "Util.h"
 #include "Task.h"
+#include <termios.h>
+#include <unistd.h>
 
 using namespace std;
 
-string currentVersion = "1.5";
+string currentVersion = "1.6";
 string Program::filename;
 const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove",
                                  "showdescription", "edit", "togglesortby", "search", "erase", "logout", "filter"};
@@ -406,9 +407,15 @@ void Program::askForLogin() {
     while (getline(inputUsernameStream, line)) {
         if (line.find(username) != string::npos) {
             line.erase(0, username.size() + 1);
+            termios oldt;
+            tcgetattr(STDIN_FILENO, &oldt);
+            termios newt = oldt;
+            newt.c_lflag &= ~ECHO;
+            tcsetattr(STDIN_FILENO, TCSANOW, &newt);
             cout << "Enter your password: ";
             string password;
             getline(cin, password);
+            tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
             if (line.find(password) != string::npos) {
                 cout << "\033[32mLogin successful.\n\033[0m";
                 filename = username + ".csv";
