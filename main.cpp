@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.4.1
+ * Version Number: 1.5
  */
 
 // Contribution: aqariio
@@ -11,15 +11,17 @@
 #include <vector>
 #include <algorithm>
 #include <cstdio>
+#include <termios.h>
+#include <unistd.h>
 
 using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.4.1";
+string currentVersion = "1.5";
 string sortBy = "priority";
 string filename;
-const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove", "showdescription", "edit", "togglesortby", "search", "erase", "logout"};
+const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove", "showdescription", "edit", "togglesortby", "search", "erase", "logout", "filter"};
 const int WIDTH = 70;
 
 class Task {
@@ -28,6 +30,7 @@ public:
     string date;
     string description;
     string priority;
+    string tag;
 };
 
 vector<Task> tasks;
@@ -224,7 +227,7 @@ private:
         outputSaveStream.close();
         outputSaveStream.open(filename, ios::app);
         for (Task task : tasks) {
-            outputSaveStream << task.name << "," << task.date << "," << task.description << "," << task.priority << "\n";
+            outputSaveStream << "\"" << task.name << "\"" << "," << "\"" << task.date << "\"" << "," << "\"" << task.description << "\"" << "," << "\"" << task.priority << "\"" << "," << "\"" << task.tag << "\"" << "\n";
         }
         outputSaveStream.flush();
     }
@@ -334,6 +337,9 @@ public:
                     askForLogin();
                     initialization();
                     break;
+                case 13:
+                    filter();
+                    break;
             }
         } else {
             cout << "\033[31mCommand not found.\n\033[0m";
@@ -357,6 +363,7 @@ public:
         printf("search -> search for a task (1.2)");
         printf("erase -> erase account (1.4)");
         printf("logout -> logout (1.4)");
+        printf("filter -> filter by tag (1.5)");
         printBottomRow();
         showMenu();
     }
@@ -398,9 +405,18 @@ public:
             task.priority = "medium";
         }
 
+        cout << "Give it a tag (red, orange, yellow, green, blue, purple, gray) (Optional): ";
+        string tag;
+        getline(cin, tag);
+        if (tag == "red" || tag == "orange" || tag == "yellow" || tag == "green" || tag == "blue" || tag == "purple" || tag == "gray") {
+            task.tag = tag;
+        } else {
+            task.tag = "";
+        }
+
         tasks.push_back(task);
         sort();
-        outputSaveStream << "\"" << task.name << "\"" << "," << "\"" << task.date << "\"" << "," << "\"" << task.description << "\"" << "," << "\"" << task.priority << "\"" << "\n";
+        outputSaveStream << "\"" << task.name << "\"" << "," << "\"" << task.date << "\"" << "," << "\"" << task.description << "\"" << "," << "\"" << task.priority << "\"" << "," << "\"" << task.tag << "\"" << "\n";
         outputSaveStream.flush();
         cout << "\033[32mTask added.\n\033[0m";
         printBottomRow();
@@ -458,6 +474,8 @@ public:
                     task.description += c;
                 } else if (state == 3) {
                     task.priority += c;
+                } else if (state == 4) {
+                    task.tag += c;
                 }
             }
             task.name.erase(0, 1);
@@ -468,6 +486,8 @@ public:
             task.description.erase(task.description.size() - 1);
             task.priority.erase(0, 1);
             task.priority.erase(task.priority.size() - 1);
+            task.tag.erase(0, 1);
+            task.tag.erase(task.tag.size() - 1);
             tasks.push_back(task);
         }
         sort();
@@ -488,10 +508,10 @@ public:
         }
         printf("Here are the list of tasks:");
         printf("Sort by: " + sortBy);
-        printf("ID | Task Name | Due Date | Priority");
+        printf("ID | Task Name | Due Date | Priority | Tag");
         int id = 1;
         for (Task task : tasks) {
-            printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority);
+            printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority + " | " + task.tag);
             id++;
         }
         printBottomRow();
@@ -644,9 +664,15 @@ public:
         while (getline(inputUsernameStream, line)) {
             if (line.find(username) != string::npos) {
                 line.erase(0, username.size() + 1);
+                termios oldt;
+                tcgetattr(STDIN_FILENO, &oldt);
+                termios newt = oldt;
+                newt.c_lflag &= ~ECHO;
+                tcsetattr(STDIN_FILENO, TCSANOW, &newt);
                 cout << "Enter your password: ";
                 string password;
                 getline(cin, password);
+                tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
                 if (line.find(password) != string::npos) {
                     cout << "\033[32mLogin successful.\n\033[0m";
                     filename = username + ".csv";
@@ -723,6 +749,29 @@ public:
             printBottomRow();
             showMenu();
         }
+    }
+
+    void filter() {
+        printTopRow();
+        cout << "Enter the tag you want to filter for: ";
+        string tag;
+        getline(cin, tag);
+        printf("ID | Task Name | Due Date | Priority");
+        int id = 1;
+        bool found = false;
+        for (Task task : tasks) {
+            if (task.tag.find(tag) != string::npos) {
+                printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority);
+                found = true;
+            }
+            id++;
+        }
+
+        if (!found) {
+            printf("\033[31mNo tasks found.\033[0m", 15);
+        }
+        printBottomRow();
+        showMenu();
     }
 };
 
