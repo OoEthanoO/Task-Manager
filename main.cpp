@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: November 21, 2023
- * Version Number: 1.4
+ * Version Number: 1.4.1
  */
 
 // Contribution: aqariio
@@ -16,7 +16,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.4";
+string currentVersion = "1.4.1";
 string sortBy = "priority";
 string filename;
 const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove", "showdescription", "edit", "togglesortby", "search", "erase", "logout"};
@@ -356,6 +356,7 @@ public:
         printf("togglesortby -> toggle sort mode between priority and date (1.1)");
         printf("search -> search for a task (1.2)");
         printf("erase -> erase account (1.4)");
+        printf("logout -> logout (1.4)");
         printBottomRow();
         showMenu();
     }
