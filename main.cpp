@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
  * Project Start Date: 11-21-2023
- * Version Number: 1.6.2
+ * Version Number: 1.6.3
  */
 
 // Contribution: aqariio
@@ -18,7 +18,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.6.2";
+string currentVersion = "1.6.3";
 string sortBy = "priority";
 string filename;
 const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove", "showdescription", "edit", "togglesortby", "search", "erase", "logout", "filter"};
