@@ -1,7 +1,7 @@
 /*
  * Author: Ethan Xu
- * Project Start Date: November 21, 2023
- * Version Number: 1.5
+ * Project Start Date: 11-21-2023
+ * Version Number: 1.6.2
  */
 
 // Contribution: aqariio
@@ -18,7 +18,7 @@ using namespace std;
 
 ofstream outputSaveStream;
 ifstream inputReadStream;
-string currentVersion = "1.5";
+string currentVersion = "1.6.2";
 string sortBy = "priority";
 string filename;
 const vector<string> COMMANDS = {"showcommands", "version", "add", "exit", "clear", "display", "remove", "showdescription", "edit", "togglesortby", "search", "erase", "logout", "filter"};
@@ -56,8 +56,8 @@ private:
         cout << "\n\n";
     }
 
-    static void printf(string text) {
-        int size = text.size();
+    static void printf(const string& text) {
+        int size = (int) text.size();
         int width = WIDTH;
         width -= 3;
         cout << "\033[34m| \033[0m";
@@ -70,7 +70,7 @@ private:
         cout << "\n";
     }
 
-    static void printf(string text, int size) {
+    static void printf(const string& text, int size) {
         int width = WIDTH;
         width -= 3;
         cout << "\033[34m| \033[0m";
@@ -199,7 +199,7 @@ private:
         return id;
     }
 
-    void printWindow(string text) {
+    static void printWindow(const string& text) {
         printTopRow();
         cout << "| ";
         int chars = 2;
@@ -221,18 +221,18 @@ private:
         printBottomRow();
     }
 
-    void refreshStorage() {
+    static void refreshStorage() {
         outputSaveStream.close();
         outputSaveStream.open(filename, ios::trunc);
         outputSaveStream.close();
         outputSaveStream.open(filename, ios::app);
-        for (Task task : tasks) {
+        for (const Task& task : tasks) {
             outputSaveStream << "\"" << task.name << "\"" << "," << "\"" << task.date << "\"" << "," << "\"" << task.description << "\"" << "," << "\"" << task.priority << "\"" << "," << "\"" << task.tag << "\"" << "\n";
         }
         outputSaveStream.flush();
     }
 
-    void sort() {
+    static void sort() {
         if (sortBy == "priority") {
             std::sort(tasks.begin(), tasks.end(), sortByPriority);
         } else {
@@ -240,13 +240,13 @@ private:
         }
     }
 
-    void toLowerCase(string &s) {
+    static void toLowerCase(string &s) {
         for (char &c : s) {
-            c = tolower(c);
+            c = (char) tolower(c);
         }
     }
 
-    static bool sortByPriority(Task t1, Task t2) {
+    static bool sortByPriority(const Task& t1, const Task& t2) {
         if (t1.priority == "high" && t2.priority == "medium") {
             return true;
         }
@@ -259,7 +259,7 @@ private:
         return false;
     }
 
-    static bool sortByDate(Task t1, Task t2) {
+    static bool sortByDate(const Task& t1, const Task& t2) {
         int year1 = stoi(t1.date.substr(0, 4));
         int year2 = stoi(t2.date.substr(0, 4));
         if (year1 < year2) {
@@ -292,7 +292,7 @@ public:
         string command;
         getline(cin, command);
         toLowerCase(command);
-        int index = find(COMMANDS.begin(), COMMANDS.end(), command) - COMMANDS.begin();
+        int index = (int) (find(COMMANDS.begin(), COMMANDS.end(), command) - COMMANDS.begin());
         if (index < COMMANDS.size()) {
             switch (index) {
                 case 0:
@@ -338,6 +338,7 @@ public:
                     initialization();
                     break;
                 case 13:
+                default:
                     filter();
                     break;
             }
@@ -424,7 +425,7 @@ public:
         showMenu();
     }
 
-    void exitProgram() {
+    static void exitProgram() {
         printTopRow();
         printf("Exiting...");
         outputSaveStream.close();
@@ -510,7 +511,7 @@ public:
         printf("Sort by: " + sortBy);
         printf("ID | Task Name | Due Date | Priority | Tag");
         int id = 1;
-        for (Task task : tasks) {
+        for (const Task& task : tasks) {
             printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority + " | " + task.tag);
             id++;
         }
@@ -622,7 +623,7 @@ public:
         printf("ID | Task Name | Due Date | Priority");
         int id = 1;
         bool found = false;
-        for (Task task : tasks) {
+        for (const Task& task : tasks) {
             if (task.name.find(keyword) != string::npos) {
                 printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority);
                 found = true;
@@ -664,7 +665,7 @@ public:
         while (getline(inputUsernameStream, line)) {
             if (line.find(username) != string::npos) {
                 line.erase(0, username.size() + 1);
-                termios oldt;
+                termios oldt{};
                 tcgetattr(STDIN_FILENO, &oldt);
                 termios newt = oldt;
                 newt.c_lflag &= ~ECHO;
@@ -759,7 +760,7 @@ public:
         printf("ID | Task Name | Due Date | Priority");
         int id = 1;
         bool found = false;
-        for (Task task : tasks) {
+        for (const Task& task : tasks) {
             if (task.tag.find(tag) != string::npos) {
                 printf(to_string(id) + " | " + task.name + " | " + task.date + " | " + task.priority);
                 found = true;
