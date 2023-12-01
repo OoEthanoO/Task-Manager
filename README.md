@@ -24,7 +24,7 @@ This Task Manager Console Application is a simple tool for managing tasks, allow
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/Task-Manager
+   git clone https://github.com/OoEthanoO/Task-Manager
    cd Task-Manager
    
 2. Compile the program:
